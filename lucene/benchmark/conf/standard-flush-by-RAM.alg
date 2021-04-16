@@ -19,9 +19,10 @@
 
 #merge.factor=mrg:10:100:10:100:10:100:10:100
 #max.buffered=buf:10:10:100:100:10:10:100:100
-ram.flush.mb=flush:32:40:48:56:32:40:48:56
-compound=cmpnd:true:true:true:true:false:false:false:false
-
+#ram.flush.mb=flush:32:40:48:56:32:40:48:56
+ram.flush.mb=flush:2048
+#compound=cmpnd:true:true:true:true:false:false:false:false
+compound=cmpnd:false
 analyzer=org.apache.lucene.analysis.standard.StandardAnalyzer
 directory=FSDirectory
 #directory=RamDirectory
@@ -31,7 +32,8 @@ doc.tokenized=true
 doc.term.vector=false
 log.step=2000
 
-docs.dir=reuters-out
+docs.dir=/scratch0/input
+work.dir=/scratch1/output
 #docs.dir=reuters-111
 
 #content.source=org.apache.lucene.benchmark.byTask.feeds.SingleDocSource
@@ -48,45 +50,44 @@ log.queries=true
 
 { "Rounds"
 
-    ResetSystemErase
+    #ResetSystemErase
 
-    { "Populate"
-        CreateIndex
-        { "MAddDocs" AddDoc } : 20000
-        ForceMerge(1)
-        CloseIndex
-    }
+    #{ "Populate"
+    #    CreateIndex
+    #    { "MAddDocs" AddDoc } : 20000
+    #    ForceMerge(1)
+    #    CloseIndex
+    #}
 
-    OpenReader  
-    { "SearchSameRdr" Search > : 5000
-    CloseReader 
+     OpenReader  
+    [{ "SearchSameRdr" Search > : 1000000 ]: 32
+    CloseReader           
+    #{ "WarmNewRdr" Warm > : 50
                 
-    { "WarmNewRdr" Warm > : 50
+    #{ "SrchNewRdr" Search > : 500
                 
-    { "SrchNewRdr" Search > : 500
+    #{ "SrchTrvNewRdr" SearchTrav > : 300
                 
-    { "SrchTrvNewRdr" SearchTrav > : 300
+    #{ "SrchTrvRetNewRdr" SearchTravRet > : 100
                 
-    { "SrchTrvRetNewRdr" SearchTravRet > : 100
+    #OpenReader  
+    #[ "SearchSameRdr" Search > : 5000 : 2500
+    #CloseReader 
                 
-    OpenReader  
-    [ "SearchSameRdr" Search > : 5000 : 2500
-    CloseReader 
+    #[ "WarmNewRdr" Warm > : 50 : 25
                 
-    [ "WarmNewRdr" Warm > : 50 : 25
+    #[ "SrchNewRdr" Search > : 50 : 25
                 
-    [ "SrchNewRdr" Search > : 50 : 25
+    #[ "SrchTrvNewRdr" SearchTrav > : 300 : 150
                 
-    [ "SrchTrvNewRdr" SearchTrav > : 300 : 150
-                
-    [ "SrchTrvRetNewRdr" SearchTravRet > : 100 : 50
+    #[ "SrchTrvRetNewRdr" SearchTravRet > : 100 : 50
 
-    RepSumByPref MAddDocs
+    #RepSumByPref MAddDocs
 
-    NewRound
+    #NewRound
 
-} : 8
+} : 1
 
-RepSumByNameRound
-RepSumByName
-RepSumByPrefRound MAddDocs
+#RepSumByNameRound
+#RepSumByName
+#RepSumByPrefRound MAddDocs

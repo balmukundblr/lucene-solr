@@ -20,9 +20,10 @@
 writer.version=4.0
 #merge.factor=mrg:10:100:10:100:10:100:10:100
 #max.buffered=buf:10:10:100:100:10:10:100:100
-ram.flush.mb=flush:32:40:48:56:32:40:48:56
-compound=cmpnd:true:true:true:true:false:false:false:false
-
+#ram.flush.mb=flush:32:40:48:56:32:40:48:56
+#compound=cmpnd:true:true:true:true:false:false:false:false
+ram.flush.mb=flush:2048
+compound=cmpnd:false
 analyzer=org.apache.lucene.analysis.standard.StandardAnalyzer
 directory=FSDirectory
 #directory=RamDirectory
@@ -32,8 +33,10 @@ doc.tokenized=true
 doc.term.vector=false
 log.step=2000
 
-docs.dir=reuters-out
+#docs.dir=reuters-out
 #docs.dir=reuters-111
+docs.dir=/scratch/input
+work.dir=/scratch/output
 
 #content.source=org.apache.lucene.benchmark.byTask.feeds.SingleDocSource
 content.source=org.apache.lucene.benchmark.byTask.feeds.ReutersContentSource
@@ -53,8 +56,9 @@ log.queries=true
 
     { "Populate"
         CreateIndex
-        [{ "MAddDocs" AddDoc } : 5000] : 4
-        ForceMerge(1)
+        #[{ "MAddDocs" AddDoc } : 5000] : 4
+        [{ {{"MAddDocs" AddDoc } : 2343750} FlushIndex }  ] : 64
+        #ForceMerge(1)
         CloseIndex
     }
 
@@ -63,7 +67,7 @@ log.queries=true
 
     NewRound
 
-} : 8
+} : 1
 
 RepSumByNameRound
 RepSumByName
