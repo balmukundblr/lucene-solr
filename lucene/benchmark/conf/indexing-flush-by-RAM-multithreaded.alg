@@ -57,7 +57,7 @@ log.queries=true
     { "Populate"
         CreateIndex
         #[{ "MAddDocs" AddDoc } : 5000] : 4
-        [{ {{"MAddDocs" AddDoc } : 2343750} FlushIndex }  ] : 64
+        [{ {{"MAddDocs" AddDoc } : 312500 } FlushIndex }  ] : 32
         #ForceMerge(1)
         CloseIndex
     }
