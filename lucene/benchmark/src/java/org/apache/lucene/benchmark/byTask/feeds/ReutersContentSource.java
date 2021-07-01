@@ -16,7 +16,7 @@
  */
 package org.apache.lucene.benchmark.byTask.feeds;
 
-
+import org.apache.lucene.benchmark.Constants;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -52,10 +52,12 @@ public class ReutersContentSource extends ContentSource {
   private ThreadLocal<DateFormatInfo> dateFormat = new ThreadLocal<>();
   private Path dataDir = null;
   private ArrayList<Path> inputFiles = new ArrayList<>();
-  private int nextFile = 0;
-  private int iteration = 0;
-  private int[] threadIndex;
-  private volatile boolean threadIndexCreated;
+  //private int nextFile = 0;
+  //private int iteration = 0;
+  //private int[] threadIndex;
+  //private volatile boolean threadIndexCreated;
+  private int[] docCountArr;
+  private volatile boolean docCountArrCreated;
   
   @Override
   public void setConfig(Config config) {
@@ -105,8 +107,8 @@ public class ReutersContentSource extends ContentSource {
   
   @Override
   public DocData getNextDocData(DocData docData) throws NoMoreDataException, IOException {
-    Path f = null;
-    String name = null;
+    //Path f = null;
+    //String name = null;
     /**synchronized (this) {
       if (nextFile >= inputFiles.size()) {
         // exhausted files, start a new round, unless forever set to false.
@@ -119,8 +121,27 @@ public class ReutersContentSource extends ContentSource {
       f = inputFiles.get(nextFile++);
       name = f.toRealPath() + "_" + iteration;
     }**/
+    
+    if (docCountArrCreated == false) {
+      docCountArrInit();
+    }
+    
+    
+    int threadIndexSize = Thread.currentThread().getName().length();
+    int parallelTaskThreadSize = Constants.PARALLEL_TASK_THREAD_NAME_PREFIX.length();
+    
+    //Extract ThreadIndex from unique ThreadName which is set with '"ParallelTaskThread-"+index', in TaskSequence.java's doParallelTasks() 
+    int threadIndex = Integer.parseInt(Thread.currentThread().getName().substring(parallelTaskThreadSize + 1, threadIndexSize));
+    assert (threadIndex >= 0 && threadIndex < docCountArr.length):"Please check threadIndex or fileIndexArr length";
+    int stride = threadIndex + docCountArr[threadIndex] * docCountArr.length;
+    int inFileSize = inputFiles.size();
+    int fileIndex = stride % inFileSize;
+    Path  f = null;
+    String name = null;
+    int iteration = stride / inFileSize;
+    docCountArr[threadIndex]++;
 
-    int inputFilesSize = inputFiles.size();
+    /**int inputFilesSize = inputFiles.size();
 
     if (threadIndexCreated == false) {
       createThreadIndex();
@@ -141,9 +162,9 @@ public class ReutersContentSource extends ContentSource {
       fIndex = index + threadIndex[index] * threadIndex.length;
       threadIndex[index]++;
       iteration++;
-    }
+    }**/
 
-    f = inputFiles.get(fIndex);
+    f = inputFiles.get(fileIndex);
     name = f.toRealPath() + "_" + iteration;
 
     try (BufferedReader reader = Files.newBufferedReader(f, StandardCharsets.UTF_8)) {
@@ -174,15 +195,22 @@ public class ReutersContentSource extends ContentSource {
   @Override
   public synchronized void resetInputs() throws IOException {
     super.resetInputs();
-    nextFile = 0;
-    iteration = 0;
+    //nextFile = 0;
+    //iteration = 0;
   }
 
-  private synchronized void createThreadIndex() {
+  /**private synchronized void createThreadIndex() {
     if (threadIndexCreated == false) {
       threadIndex = new int[getConfig().getNumThreads()];
       threadIndexCreated = true;
     }
+  }**/
+ 
+  private synchronized void docCountArrInit() {
+      if(docCountArrCreated == false) {
+        docCountArr = new int[getConfig().getNumThreads()];
+        docCountArrCreated = true;
+      }
   }
 
 }

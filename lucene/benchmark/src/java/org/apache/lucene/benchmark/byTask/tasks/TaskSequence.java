@@ -16,7 +16,7 @@
  */
 package org.apache.lucene.benchmark.byTask.tasks;
 
-
+import org.apache.lucene.benchmark.Constants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -345,7 +345,9 @@ public class TaskSequence extends PerfTask {
 
     initTasksArray();
     ParallelTask t[] = runningParallelTasks = new ParallelTask[repetitions * tasks.size()];
+    //Get number of parallel threads from algo file and set it to use in ReuersContentSource.java's fileIndexArrInit()
     this.getRunData().getConfig().setNumThreads(t.length);
+    //this.getRunData().getConfig().setNumThreads(t.length);
     // prepare threads
     int index = 0;
     for (int k=0; k<repetitions; k++) {
@@ -354,7 +356,12 @@ public class TaskSequence extends PerfTask {
         //t[index++] = new ParallelTask(task);
 	t[index] = new ParallelTask(task);
         // Set the thread name for guaranteed file index while processing.
-        t[index].setName("IndexThread-" + index);
+        //t[index].setName("IndexThread-" + index);
+        //index++;
+	//Setting unique ThreadName with index value which is used in ReuersContentSource.java's getNextDocData().Please make changes
+        //in ReuersContentSource.java's getNextDocData() for Integer.parseInt(Thread.currentThread().getName().substring(parallelTaskThreadSize + 1, threadIndexSize)) 
+        //before making any modifications here
+        t[index].setName(Constants.PARALLEL_TASK_THREAD_NAME_PREFIX+"-"+index);
         index++;
       }
     }
