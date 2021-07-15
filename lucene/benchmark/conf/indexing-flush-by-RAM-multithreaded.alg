@@ -35,8 +35,9 @@ log.step=2000
 
 #docs.dir=reuters-out
 #docs.dir=reuters-111
-docs.dir=/scratch/input
+docs.dir=/scratch/input/ES-tmp/
 work.dir=/scratch/output
+
 
 #content.source=org.apache.lucene.benchmark.byTask.feeds.SingleDocSource
 content.source=org.apache.lucene.benchmark.byTask.feeds.ReutersContentSource
@@ -57,7 +58,7 @@ log.queries=true
     { "Populate"
         CreateIndex
         #[{ "MAddDocs" AddDoc } : 5000] : 4
-        [{ {{"MAddDocs" AddDoc } : 312500 } FlushIndex }  ] : 32
+        [{ {{"MAddDocs" AddDoc } : 312500 } FlushIndex }  ] : 64
         #ForceMerge(1)
         CloseIndex
     }
